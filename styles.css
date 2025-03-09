@@ -1,0 +1,130 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  
+  .form-container, .output-container {
+    width: 45%;
+  }
+  
+  .form-container label, .form-container input, .form-container select {
+    display: block;
+    margin: 5px 0;
+  }
+  
+  .ingredient-group {
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  .output-container {
+    width: 45%;
+  }
+  
+  .output-container h2 {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  #supplementFacts {
+    width: 270px;
+    border: 1px solid black;
+    padding: 10px;
+    box-sizing: border-box;
+    display: block;
+    clear: both;
+    margin: 0 0 10px 0;
+  }
+  
+  .product-name {
+    width: 100%;
+    max-width: 248px;
+    text-align: center;
+    font-size: 10pt;
+    font-weight: bold;
+    margin: 0 auto 5px auto;
+  }
+  
+  .supplement-facts {
+    width: 100%;
+    max-width: 248px;
+    border: 1px solid black;
+    font-size: 8pt;
+    padding: 5px;
+    box-sizing: border-box;
+    margin: 0 auto;
+  }
+  
+  .title {
+    font-weight: bold;
+    font-size: 10pt;
+    border-bottom: 2px solid black;
+  }
+  
+  .serving {
+    margin: 5px 0;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table td {
+    border-bottom: 1px solid black;
+    padding: 2px;
+  }
+  
+  .divider {
+    border-top: 1px solid black;
+    margin: 5px 0;
+  }
+  
+  button {
+    margin-top: 10px;
+    padding: 5px 10px;
+  }
+  
+  #panelSearch {
+    width: 100%;
+    max-width: 250px; /* Match panel width for consistency */
+    padding: 5px;
+    margin-bottom: 5px;
+  }
+  
+  #savedPanels {
+    width: 100%;
+    max-width: 250px; /* Match search input */
+    margin-top: 0; /* Remove extra spacing since search input is above */
+  }
+  
+  @media print {
+    .form-container, h2, button, #savedPanels, #saveStatus, #panelSearch {
+      display: none;
+    }
+    .output-container {
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    #supplementFacts {
+      width: 270px;
+      border: 1px solid black;
+      box-sizing: border-box;
+    }
+    .product-name {
+      width: 100%;
+      max-width: 248px;
+      margin: 0 auto 5px auto;
+    }
+    .supplement-facts {
+      width: 100%;
+      max-width: 248px;
+      border: 1px solid black;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+  }

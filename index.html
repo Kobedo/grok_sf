@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supplement Facts Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="form-container">
+    <h2>Create/Edit Supplement Facts</h2>
+    <label>SKU: <input type="text" id="sku" placeholder="e.g., EB123"></label>
+    <label>Product Name: <input type="text" id="productName" placeholder="e.g., Energy Boost"></label>
+    <label>Serving Size: <input type="text" id="servingSize"></label>
+    <label>Servings Per Container: <input type="text" id="servings"></label>
+
+    <div class="ingredient-group">
+      <h3>Daily Value Ingredients</h3>
+      <select id="dvIngredient"></select>
+      <label>Amount: <input type="text" id="dvAmount" placeholder="e.g., 90" oninput="calculateDV()"></label>
+      <label><input type="checkbox" id="autoCalculate" checked> Auto-calculate % DV</label>
+      <label>Calculated % DV: <input type="text" id="calculatedDV" readonly></label>
+      <label>Override % DV: <input type="text" id="dvPercent" placeholder="e.g., 100%"></label>
+      <button onclick="addDVIngredient()">Add DV Ingredient</button>
+      <ul id="dvList"></ul>
+    </div>
+
+    <div class="ingredient-group">
+      <h3>Non-Daily Value Ingredients</h3>
+      <label>Ingredient: <input type="text" id="nonDVIngredient" placeholder="e.g., Ginseng"></label>
+      <label>Amount: <input type="text" id="nonDVAmount" placeholder="e.g., 50"></label>
+      <label>Unit: <input type="text" id="nonDVUnit" placeholder="e.g., mg"></label>
+      <button onclick="addNonDVIngredient()">Add Non-DV Ingredient</button>
+      <ul id="nonDVList"></ul>
+    </div>
+
+    <button onclick="generatePanel()">Generate Supplement Facts</button>
+  </div>
+
+  <div class="output-container">
+    <h2>Preview</h2>
+    <div id="supplementFacts" class="supplement-facts"></div>
+    <button onclick="savePanel()">Save Panel</button>
+    <p id="saveStatus"></p>
+
+    <h2>Saved Panels</h2>
+    <label>Search by SKU or Product Name: <input type="text" id="panelSearch" oninput="filterPanels(this.value)"></label>
+    <select id="savedPanels" onchange="loadPanel(this.value)">
+      <option value="">Select a saved panel</option>
+    </select>
+    <button onclick="fetchPanels()">Refresh Saved Panels</button>
+  </div>
+
+  <script src="ingredients.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
