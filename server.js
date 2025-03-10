@@ -12,7 +12,8 @@ app.use(cors());
 app.use(express.static(__dirname));
 
 // SQLite Database Setup
-const db = new sqlite3.Database('items.db', (err) => {
+const dbPath = process.env.DB_PATH || 'items.db'; // Use /data/items.db on Render, items.db locally
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
   } else {
