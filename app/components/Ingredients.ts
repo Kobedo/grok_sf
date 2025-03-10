@@ -1,4 +1,4 @@
-const fdaIngredients = {
+export const fdaIngredients = {
     Vitamins: {
       "Fat-Soluble": [
         { name: "Vitamin A", unit: "mcg RAE", rdi: 900 },
