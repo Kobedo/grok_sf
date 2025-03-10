@@ -16,11 +16,11 @@
     <div class="ingredient-group">
       <h3>Daily Value Ingredients</h3>
       <select id="dvIngredient"></select>
-      <label>Amount: <input type="text" id="dvAmount" placeholder="e.g., 90" oninput="calculateDV()"></label>
+      <label>Amount: <input type="text" id="dvAmount" placeholder="e.g., 90"></label>
       <label><input type="checkbox" id="autoCalculate" checked> Auto-calculate % DV</label>
       <label>Calculated % DV: <input type="text" id="calculatedDV" readonly></label>
       <label>Override % DV: <input type="text" id="dvPercent" placeholder="e.g., 100%"></label>
-      <button onclick="addDVIngredient()">Add DV Ingredient</button>
+      <button id="addDVIngredientBtn">Add DV Ingredient</button>
       <ul id="dvList"></ul>
     </div>
 
@@ -33,7 +33,7 @@
       <ul id="nonDVList"></ul>
     </div>
 
-    <button onclick="generatePanel()">Generate Supplement Facts</button>
+    <button id="generatePanelBtn">Generate Supplement Facts</button>
   </div>
 
   <div class="output-container">
@@ -41,7 +41,6 @@
     <div id="supplementFacts" class="supplement-facts"></div>
     <button onclick="savePanel()">Save Panel</button>
     <p id="saveStatus"></p>
-
     <h2>Saved Panels</h2>
     <label>Search by SKU or Product Name: <input type="text" id="panelSearch" oninput="filterPanels(this.value)"></label>
     <select id="savedPanels" onchange="loadPanel(this.value)">
