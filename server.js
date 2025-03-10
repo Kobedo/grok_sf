@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Use Render’s port or 3000 locally
 
 // Middleware
 app.use(express.json());
@@ -12,8 +12,7 @@ app.use(cors());
 app.use(express.static(__dirname));
 
 // SQLite Database Setup
-const dbPath = process.env.DB_PATH || 'items.db'; // Use /data/items.db on Render, items.db locally
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database(process.env.DB_PATH || 'items.db', (err) => {
   if (err) {
     console.error('Error opening database:', err.message);
   } else {
@@ -38,7 +37,6 @@ app.post('/save-panel', (req, res) => {
   const { id, sku, productName, servingSize, servings, dvIngredients, nonDVIngredients, timestamp } = req.body;
   
   if (id) {
-    // Update existing panel
     const stmt = db.prepare(`
       UPDATE panels 
       SET sku = ?, productName = ?, servingSize = ?, servings = ?, dvIngredients = ?, nonDVIngredients = ?, timestamp = ?
@@ -63,7 +61,6 @@ app.post('/save-panel', (req, res) => {
     );
     stmt.finalize();
   } else {
-    // Insert new panel
     const stmt = db.prepare(`
       INSERT INTO panels (sku, productName, servingSize, servings, dvIngredients, nonDVIngredients, timestamp)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -110,5 +107,5 @@ app.get('/get-panels', (req, res) => {
 
 // Start Server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
