@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import SupplementForm from '../components/SupplementForm';
-import PreviewPanel from '../components/PreviewPanel';
-import SavedPanels from '../components/SavedPanels';
+import { SupplementForm, PreviewPanel, SavedPanels } from '@';
 
 const HomeContainer = styled.div`
   display: flex;
