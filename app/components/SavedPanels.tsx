@@ -109,11 +109,13 @@ function SavedPanels({
         servingSize: panel.servingSize,
         servings: panel.servings,
       });
-      setDvIngredients(JSON.parse(panel.dvIngredients));
-      setNonDvIngredients(JSON.parse(panel.nonDvIngredients));
+      setDvIngredients(panel.dvIngredients ? JSON.parse(panel.dvIngredients) : []);
+      setNonDvIngredients(panel.nonDvIngredients ? JSON.parse(panel.nonDvIngredients) : []);
       setCurrentPanelId(panel.id);
     } catch (error) {
       console.error('Error loading panel:', error);
+      setDvIngredients([]);
+      setNonDvIngredients([]);
     }
   };
 

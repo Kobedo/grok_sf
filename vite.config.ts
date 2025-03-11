@@ -14,4 +14,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'app'),
     },
   },
+  server: {
+    proxy: {
+      '/get-panels': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/save-panel': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
 });
