@@ -18,7 +18,7 @@ function Generator() {
 
   const fetchPanels = async () => {
     try {
-      const response = await fetch('/get-panels');
+      const response = await fetch('/api/get-panels'); // Fixed to /api/
       const panels = await response.json();
       setAllPanels(panels);
     } catch (error) {
@@ -43,7 +43,7 @@ function Generator() {
         fetchPanels={fetchPanels}
       />
       <PreviewPanel
-        panelData={panelData} // Added
+        panelData={panelData}
         dvIngredients={dvIngredients}
         nonDvIngredients={nonDvIngredients}
       />

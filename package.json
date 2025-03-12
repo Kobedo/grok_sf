@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "dependencies": {
+        "@vitejs/plugin-react": "^4.3.4",
         "cors": "^2.8.5",
         "express": "^4.18.2",
         "path": "^0.12.7",
@@ -10,14 +11,13 @@
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.30.0",
         "sqlite3": "^5.1.7",
-        "styled-components": "^6.1.15"
+        "styled-components": "^6.1.15",
+        "vite": "^6.2.1"
     },
     "devDependencies": {
-        "@vitejs/plugin-react": "^4.3.4",
         "concurrently": "^9.1.2",
         "dotenv": "^16.4.7",
-        "typescript": "^5.8.2",
-        "vite": "^5.0.0"
+        "typescript": "^5.8.2"
     },
     "scripts": {
         "start": "node server.js",
