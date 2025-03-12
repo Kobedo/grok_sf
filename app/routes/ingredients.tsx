@@ -1,14 +1,78 @@
 import styled from 'styled-components';
+import { useState, useEffect } from 'react';
 
 const IngredientsContainer = styled.div`
   padding: 20px;
 `;
 
+const Input = styled.input`
+  margin-right: 10px;
+`;
+
+const Button = styled.button`
+  margin: 0 5px;
+`;
+
 function Ingredients() {
+  const [ingredients, setIngredients] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newUnit, setNewUnit] = useState('');
+  const [newRdi, setNewRdi] = useState('');
+
+  useEffect(() => {
+    fetch('/get-ingredients')
+      .then(res => res.json())
+      .then(data => setIngredients(data));
+  }, []);
+
+  const addIngredient = async () => {
+    if (newName.trim()) {
+      const res = await fetch('/add-ingredient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newName.trim(),
+          unit: newUnit || 'mg',
+          rdi: newRdi ? Number(newRdi) : null
+        }),
+      });
+      if (res.ok) {
+        const updated = await fetch('/get-ingredients').then(r => r.json());
+        setIngredients(updated);
+        setNewName('');
+        setNewUnit('');
+        setNewRdi('');
+      }
+    }
+  };
+
   return (
     <IngredientsContainer>
       <h1>Manage Ingredients</h1>
-      <p>Coming soon: Add, edit, and delete ingredients here.</p>
+      <div>
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="Name"
+        />
+        <Input
+          value={newUnit}
+          onChange={(e) => setNewUnit(e.target.value)}
+          placeholder="Unit"
+        />
+        <Input
+          value={newRdi}
+          onChange={(e) => setNewRdi(e.target.value)}
+          placeholder="RDI (optional)"
+          type="number"
+        />
+        <Button onClick={addIngredient}>Add</Button>
+      </div>
+      <ul>
+        {ingredients.map((ing) => (
+          <li key={ing.id}>{`${ing.name} (${ing.unit}, RDI: ${ing.rdi ?? 'N/A'})`}</li>
+        ))}
+      </ul>
     </IngredientsContainer>
   );
 }

@@ -1,101 +1,106 @@
+require('dotenv').config();
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const db = new sqlite3.Database('./items.db');
 
-// Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Database setup
-const db = new sqlite3.Database('./items.db', (err) => {
-  if (err) {
-    console.error('Error connecting to SQLite database:', err.message);
-  } else {
-    console.log('Connected to SQLite database.');
-    db.run(`
-      CREATE TABLE IF NOT EXISTS panels (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sku TEXT,
-        productName TEXT,
-        servingSize TEXT,
-        servings TEXT,
-        dvIngredients TEXT,
-        nonDvIngredients TEXT,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+db.run(`
+  CREATE TABLE IF NOT EXISTS panels (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sku TEXT,
+    productName TEXT,
+    servingSize TEXT,
+    servings TEXT,
+    dvIngredients TEXT,
+    nonDvIngredients TEXT
+  )
+`);
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS ingredients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE,
+    unit TEXT,
+    rdi REAL
+  )
+`);
+
+// Seed with fdaIngredients
+const { fdaIngredients } = require('./app/components/Ingredients');
+db.get('SELECT COUNT(*) as count FROM ingredients', (err, row) => {
+  if (!err && row.count === 0) {
+    const stmt = db.prepare('INSERT INTO ingredients (name, unit, rdi) VALUES (?, ?, ?)');
+    [
+      ...fdaIngredients.Vitamins["Fat-Soluble"],
+      ...fdaIngredients.Vitamins["Water-Soluble"],
+      ...fdaIngredients.Minerals.Macrominerals,
+      ...fdaIngredients.Minerals["Trace Minerals"],
+      ...fdaIngredients.Other
+    ].forEach(ing => stmt.run(ing.name, ing.unit, ing.rdi));
+    stmt.finalize();
   }
 });
 
-// API Endpoints
 app.get('/get-panels', (req, res) => {
-  db.all('SELECT * FROM panels ORDER BY timestamp DESC', [], (err, rows) => {
+  db.all('SELECT * FROM panels', [], (err, rows) => {
     if (err) {
-      console.error('Error fetching panels:', err.message);
-      res.status(500).json({ error: 'Failed to fetch panels' });
-    } else {
-      res.json(rows);
+      res.status(500).json({ error: err.message });
+      return;
     }
+    res.json(rows);
   });
 });
 
 app.post('/save-panel', (req, res) => {
-  const {
-    id,
-    sku,
-    productName,
-    servingSize,
-    servings,
-    dvIngredients,
-    nonDvIngredients,
-  } = req.body;
-
-  const dvIngredientsStr = JSON.stringify(dvIngredients);
-  const nonDvIngredientsStr = JSON.stringify(nonDvIngredients);
-
-  if (id) {
-    // Update existing panel
-    db.run(
-      `UPDATE panels SET sku = ?, productName = ?, servingSize = ?, servings = ?, dvIngredients = ?, nonDvIngredients = ? WHERE id = ?`,
-      [sku, productName, servingSize, servings, dvIngredientsStr, nonDvIngredientsStr, id],
-      function (err) {
-        if (err) {
-          console.error('Error updating panel:', err.message);
-          res.status(500).json({ error: 'Failed to update panel' });
-        } else {
-          res.json({ message: 'Panel updated', id });
-        }
+  const { sku, productName, servingSize, servings, dvIngredients, nonDvIngredients } = req.body;
+  db.run(
+    `INSERT INTO panels (sku, productName, servingSize, servings, dvIngredients, nonDvIngredients)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [sku, productName, servingSize, servings, JSON.stringify(dvIngredients), JSON.stringify(nonDvIngredients)],
+    function (err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
       }
-    );
-  } else {
-    // Insert new panel
-    db.run(
-      `INSERT INTO panels (sku, productName, servingSize, servings, dvIngredients, nonDvIngredients) VALUES (?, ?, ?, ?, ?, ?)`,
-      [sku, productName, servingSize, servings, dvIngredientsStr, nonDvIngredientsStr],
-      function (err) {
-        if (err) {
-          console.error('Error saving panel:', err.message);
-          res.status(500).json({ error: 'Failed to save panel' });
-        } else {
-          res.json({ message: 'Panel saved', id: this.lastID });
-        }
-      }
-    );
-  }
+      res.json({ id: this.lastID });
+    }
+  );
 });
 
-// Catch-all route for client-side routing (React Router)
+app.get('/get-ingredients', (req, res) => {
+  db.all('SELECT * FROM ingredients', [], (err, rows) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to fetch ingredients' });
+      return;
+    }
+    res.json(rows);
+  });
+});
+
+app.post('/add-ingredient', (req, res) => {
+  const { name, unit, rdi } = req.body;
+  db.run(
+    'INSERT OR IGNORE INTO ingredients (name, unit, rdi) VALUES (?, ?, ?)',
+    [name, unit || 'mg', rdi],
+    (err) => {
+      if (err) {
+        res.status(500).json({ error: 'Failed to add ingredient' });
+        return;
+      }
+      res.json({ message: 'Ingredient added' });
+    }
+  );
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
