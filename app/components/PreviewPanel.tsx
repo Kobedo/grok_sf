@@ -5,6 +5,13 @@ const PreviewContainer = styled.div`
   border: 1px solid black;
   padding: 10px;
   margin-bottom: 10px;
+
+  @media print {
+    width: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
 `;
 
 const ProductName = styled.div`
@@ -17,6 +24,10 @@ const ProductName = styled.div`
 const SupplementFacts = styled.div`
   max-width: 248px;
   border: 1px solid black;
+
+  @media print {
+    max-width: 100%;
+  }
 `;
 
 const Title = styled.div`
@@ -37,6 +48,22 @@ const Table = styled.table`
 const Divider = styled.div`
   border-top: 2px solid black;
   margin: 5px 0;
+`;
+
+const Button = styled.button`
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  @media print {
+    display: none; // Hide button in print view
+  }
 `;
 
 interface Ingredient {
@@ -60,6 +87,10 @@ interface Props {
 
 function PreviewPanel({ dvIngredients, nonDvIngredients, panelData }: Props) {
   const { productName = 'Not specified', servingSize = 'Not specified', servings = 'Not specified' } = panelData;
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <PreviewContainer>
@@ -96,6 +127,7 @@ function PreviewPanel({ dvIngredients, nonDvIngredients, panelData }: Props) {
           </tbody>
         </Table>
       </SupplementFacts>
+      <Button onClick={handlePrint}>Print</Button>
     </PreviewContainer>
   );
 }
