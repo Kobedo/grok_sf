@@ -16,14 +16,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/get-panels': {
-        target: 'http://localhost:3001', // Changed from 3000
+      '/api': {
+        target: 'http://localhost:3001',
         changeOrigin: true,
-      },
-      '/save-panel': {
-        target: 'http://localhost:3001', // Changed from 3000
-        changeOrigin: true,
-      },
-    },
+      }
+    }
   },
 });

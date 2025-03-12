@@ -20,14 +20,23 @@ function Ingredients() {
   const [newRdi, setNewRdi] = useState('');
 
   useEffect(() => {
-    fetch('/get-ingredients')
-      .then(res => res.json())
-      .then(data => setIngredients(data));
+    console.log('Fetching /api/get-ingredients...');
+    fetch('/api/get-ingredients')
+      .then(res => res.text())
+      .then(text => {
+        console.log('Raw response from /api/get-ingredients:', text);
+        return JSON.parse(text);
+      })
+      .then(data => {
+        console.log('Parsed data:', data);
+        setIngredients(data);
+      })
+      .catch(err => console.error('Fetch error:', err));
   }, []);
 
   const addIngredient = async () => {
     if (newName.trim()) {
-      const res = await fetch('/add-ingredient', {
+      const res = await fetch('/api/add-ingredient', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,7 +46,7 @@ function Ingredients() {
         }),
       });
       if (res.ok) {
-        const updated = await fetch('/get-ingredients').then(r => r.json());
+        const updated = await fetch('/api/get-ingredients').then(r => r.json());
         setIngredients(updated);
         setNewName('');
         setNewUnit('');
