@@ -13,24 +13,26 @@ const Button = styled.button`
   margin: 0 5px;
 `;
 
+const ListItem = styled.li`
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+`;
+
 function Ingredients() {
   const [ingredients, setIngredients] = useState([]);
   const [newName, setNewName] = useState('');
   const [newUnit, setNewUnit] = useState('');
   const [newRdi, setNewRdi] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editUnit, setEditUnit] = useState('');
+  const [editRdi, setEditRdi] = useState('');
 
   useEffect(() => {
-    console.log('Fetching /api/get-ingredients...');
     fetch('/api/get-ingredients')
-      .then(res => res.text())
-      .then(text => {
-        console.log('Raw response from /api/get-ingredients:', text);
-        return JSON.parse(text);
-      })
-      .then(data => {
-        console.log('Parsed data:', data);
-        setIngredients(data);
-      })
+      .then(res => res.json())
+      .then(data => setIngredients(data))
       .catch(err => console.error('Fetch error:', err));
   }, []);
 
@@ -52,6 +54,44 @@ function Ingredients() {
         setNewUnit('');
         setNewRdi('');
       }
+    }
+  };
+
+  const startEdit = (ing) => {
+    setEditId(ing.id);
+    setEditName(ing.name);
+    setEditUnit(ing.unit);
+    setEditRdi(ing.rdi ? String(ing.rdi) : '');
+  };
+
+  const saveEdit = async () => {
+    if (editId && editName.trim()) {
+      const res = await fetch(`/api/update-ingredient/${editId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editName.trim(),
+          unit: editUnit || 'mg',
+          rdi: editRdi ? Number(editRdi) : null
+        }),
+      });
+      if (res.ok) {
+        const updated = await fetch('/api/get-ingredients').then(r => r.json());
+        setIngredients(updated);
+        setEditId(null);
+        setEditName('');
+        setEditUnit('');
+        setEditRdi('');
+      }
+    }
+  };
+
+  const deleteIngredient = async (id) => {
+    const res = await fetch(`/api/delete-ingredient/${id}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      setIngredients(ingredients.filter(ing => ing.id !== id));
     }
   };
 
@@ -79,7 +119,33 @@ function Ingredients() {
       </div>
       <ul>
         {ingredients.map((ing) => (
-          <li key={ing.id}>{`${ing.name} (${ing.unit}, RDI: ${ing.rdi ?? 'N/A'})`}</li>
+          <ListItem key={ing.id}>
+            {editId === ing.id ? (
+              <>
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
+                <Input
+                  value={editUnit}
+                  onChange={(e) => setEditUnit(e.target.value)}
+                />
+                <Input
+                  value={editRdi}
+                  onChange={(e) => setEditRdi(e.target.value)}
+                  type="number"
+                />
+                <Button onClick={saveEdit}>Save</Button>
+                <Button onClick={() => setEditId(null)}>Cancel</Button>
+              </>
+            ) : (
+              <>
+                {`${ing.name} (${ing.unit}, RDI: ${ing.rdi ?? 'N/A'})`}
+                <Button onClick={() => startEdit(ing)}>Edit</Button>
+                <Button onClick={() => deleteIngredient(ing.id)}>Delete</Button>
+              </>
+            )}
+          </ListItem>
         ))}
       </ul>
     </IngredientsContainer>

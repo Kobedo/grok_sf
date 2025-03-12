@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { fdaIngredients } from './Ingredients';
 
 const FormContainer = styled.div`
   display: flex;
@@ -80,6 +79,16 @@ function SupplementForm({
     amount: '',
     unit: '',
   });
+  const [availableIngredients, setAvailableIngredients] = useState<
+    { name: string; unit: string; rdi: number | null }[]
+  >([]);
+
+  useEffect(() => {
+    fetch('/api/get-ingredients')
+      .then(res => res.json())
+      .then(data => setAvailableIngredients(data))
+      .catch(err => console.error('Fetch ingredients error:', err));
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPanelData({ ...panelData, [e.target.id]: e.target.value });
@@ -92,23 +101,14 @@ function SupplementForm({
       return;
     }
 
-    let rdi: number | undefined, unit: string | undefined;
-    for (const category in fdaIngredients) {
-      if (Array.isArray(fdaIngredients[category])) {
-        const found = fdaIngredients[category].find(i => i.name === nutrient);
-        if (found) { rdi = found.rdi; unit = found.unit; }
-      } else {
-        for (const subcategory in fdaIngredients[category]) {
-          const found = fdaIngredients[category][subcategory].find(i => i.name === nutrient);
-          if (found) { rdi = found.rdi; unit = found.unit; }
-        }
-      }
+    const ingredient = availableIngredients.find(i => i.name === nutrient);
+    if (!ingredient || ingredient.rdi === null) {
+      setDvState({ ...dvState, calculatedDV: '' });
+      return;
     }
 
-    if (!rdi) return;
-
     const amountNum = parseFloat(amount.match(/(\d*\.?\d+)/)?.[0] || '0');
-    const percentDV = Math.round((amountNum / rdi) * 100);
+    const percentDV = Math.round((amountNum / ingredient.rdi) * 100);
     setDvState({ ...dvState, calculatedDV: `${percentDV}%` });
   };
 
@@ -116,21 +116,11 @@ function SupplementForm({
     const { nutrient, amount, percent, autoCalculate, calculatedDV } = dvState;
     if (!nutrient || !amount) return;
 
-    let unit: string | undefined;
-    for (const category in fdaIngredients) {
-      if (Array.isArray(fdaIngredients[category])) {
-        const found = fdaIngredients[category].find(i => i.name === nutrient);
-        if (found) unit = found.unit;
-      } else {
-        for (const subcategory in fdaIngredients[category]) {
-          const found = fdaIngredients[category][subcategory].find(i => i.name === nutrient);
-          if (found) unit = found.unit;
-        }
-      }
-    }
+    const ingredient = availableIngredients.find(i => i.name === nutrient);
+    const unit = ingredient ? ingredient.unit : '';
 
     const finalPercent = autoCalculate && !percent ? calculatedDV || '0%' : percent;
-    setDvIngredients([...dvIngredients, { nutrient, amount, unit: unit || '', percent: finalPercent }]);
+    setDvIngredients([...dvIngredients, { nutrient, amount, unit, percent: finalPercent }]);
     setDvState({ nutrient: '', amount: '', percent: '', autoCalculate: true, calculatedDV: '' });
   };
 
@@ -152,7 +142,7 @@ function SupplementForm({
     };
 
     try {
-      const response = await fetch('/save-panel', {
+      const response = await fetch('/api/save-panel', { // Updated to /api/
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -178,23 +168,9 @@ function SupplementForm({
         onChange={(e) => setDvState({ ...dvState, nutrient: e.target.value })}
       >
         <option value="">Select a DV Ingredient</option>
-        {Object.entries(fdaIngredients).map(([category, items]) =>
-          Array.isArray(items) ? (
-            <optgroup key={category} label={category}>
-              {items.map((i) => (
-                <option key={i.name} value={i.name}>{`${i.name} (${i.unit})`}</option>
-              ))}
-            </optgroup>
-          ) : (
-            Object.entries(items).map(([subcat, subitems]) => (
-              <optgroup key={subcat} label={`${category} - ${subcat}`}>
-                {subitems.map((i) => (
-                  <option key={i.name} value={i.name}>{`${i.name} (${i.unit})`}</option>
-                ))}
-              </optgroup>
-            ))
-          )
-        )}
+        {availableIngredients.map((i) => (
+          <option key={i.name} value={i.name}>{`${i.name} (${i.unit})`}</option>
+        ))}
       </Select>
       <Input
         placeholder="e.g., 90"

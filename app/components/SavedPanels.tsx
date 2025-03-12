@@ -101,7 +101,7 @@ function SavedPanels({
     }
 
     try {
-      const response = await fetch(`/get-panels?id=${panelId}`);
+      const response = await fetch(`/api/get-panels?id=${panelId}`); // Updated to /api/
       const [panel] = await response.json();
       setPanelData({
         sku: panel.sku,

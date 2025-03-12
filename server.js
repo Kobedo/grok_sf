@@ -108,7 +108,34 @@ app.post('/api/add-ingredient', (req, res) => {
   );
 });
 
-// Keep original endpoints for backward compatibility (optional)
+app.put('/api/update-ingredient/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, unit, rdi } = req.body;
+  db.run(
+    'UPDATE ingredients SET name = ?, unit = ?, rdi = ? WHERE id = ?',
+    [name, unit || 'mg', rdi, id],
+    (err) => {
+      if (err) {
+        res.status(500).json({ error: 'Failed to update ingredient' });
+        return;
+      }
+      res.json({ message: 'Ingredient updated' });
+    }
+  );
+});
+
+app.delete('/api/delete-ingredient/:id', (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM ingredients WHERE id = ?', [id], (err) => {
+    if (err) {
+      res.status(500).json({ error: 'Failed to delete ingredient' });
+      return;
+    }
+    res.json({ message: 'Ingredient deleted' });
+  });
+});
+
+// Backward compatibility endpoints (optional)
 app.get('/get-panels', (req, res) => {
   db.all('SELECT * FROM panels', [], (err, rows) => {
     if (err) {
